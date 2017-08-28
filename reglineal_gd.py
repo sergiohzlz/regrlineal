@@ -2,6 +2,7 @@
 
 from numpy           import array, arange, exp, log10, dot, vstack, hstack, zeros, ones
 from numpy.random    import normal, randn, shuffle
+from numpy.linalg    import norm
 
 def genera_ds(N=100, m=1, b=0, s=1):
     X = arange(N)
@@ -26,6 +27,10 @@ def gradiente(h,W,X,Y):
             grad[j] += (h(W,X) - Y)*X[i,j]
     return grad
 
+def normalizar(v):
+    vn = [x/norm(v) for x in v]
+    return array(vn)
+
 def descenso_grad(w0in, J, h, Xorig, Y, epocas=1000, alfa=0.1, agregabias=True, verbose=True):
     if(agregabias):
         X = array([ hstack( (1,x) ) for x in Xorig ]) #agregamos un 1 al inicio del DS
@@ -43,17 +48,10 @@ def descenso_grad(w0in, J, h, Xorig, Y, epocas=1000, alfa=0.1, agregabias=True, 
     for epoca in range(epocas):
         wa = W[-1]
         wn = zeros(wa.shape)
-        #error = Y-h(wa,X)
-        error = 0.
-        for i in range(n):
-            ejemplo = X[i]
-            yh = h(wn, ejemplo)
-            err = yh - Y[i]
-            error += err**2
-            for j in range(m):
-                wn[j] = wa[j] - alfa*error*ejemplo[j]
-        #grad = dot(error,X)
-        #wn = wa - alfa* grad
+        error = h(wa,X)-Y
+        grad = dot(error,X)
+        grad = normalizar(grad)
+        wn = wa - alfa* grad
         W.append(wn)
         c = J(wn, X, h, Y)
         E.append( c )
